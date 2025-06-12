@@ -6,7 +6,7 @@ import { notFound, redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import React from 'react'
 
-import { RenderPage } from '../../../../components/RenderPage'
+import { RenderPage } from 'src/components/RenderPage'
 
 // eslint-disable-next-line no-restricted-exports
 export default async function Page({
