@@ -70,7 +70,7 @@ export default function AddPlekForm({ onSuccess }: { onSuccess?: () => void }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto p-6 bg-white rounded shadow">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto p-6 rounded shadow">
       <h2 className="text-2xl font-bold mb-4">Add a Plek</h2>
       {error && <div className="text-red-600">{error}</div>}
 

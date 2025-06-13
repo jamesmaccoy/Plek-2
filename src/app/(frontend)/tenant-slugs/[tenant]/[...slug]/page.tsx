@@ -1,106 +1,110 @@
-import type { Where } from 'payload'
+import { notFound } from 'next/navigation'
+import { Metadata } from 'next'
+import { getPayloadClient } from '@/get-payload'
+import { Page } from '@/payload-types'
 
-import configPromise from '@payload-config'
-import { headers as getHeaders } from 'next/headers'
-import { notFound, redirect } from 'next/navigation'
-import { getPayload } from 'payload'
-import React from 'react'
+interface Props {
+  params: {
+    tenant: string
+    slug: string[]
+  }
+}
 
-import { RenderPage } from 'src/components/RenderPage'
-
-// eslint-disable-next-line no-restricted-exports
-export default async function Page({
-  params: paramsPromise,
-}: {
-  params: Promise<{ slug?: string[]; tenant: string }>
-}) {
-  const params = await paramsPromise
-
-  const headers = await getHeaders()
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers })
-
-  const slug = params?.slug
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { tenant, slug } = params
+  const payload = await getPayloadClient()
 
   try {
-    const tenantsQuery = await payload.find({
-      collection: 'tenants',
-      overrideAccess: false,
-      user,
+    const page = await payload.find({
+      collection: 'pages',
       where: {
-        slug: {
-          equals: params.tenant,
+        tenant: {
+          equals: tenant,
         },
-      },
-    })
-    // If no tenant is found, the user does not have access
-    // Show the login view
-    if (tenantsQuery.docs.length === 0) {
-      redirect(
-        `/tenant-slugs/${params.tenant}/login?redirect=${encodeURIComponent(
-          `/tenant-slugs/${params.tenant}${slug ? `/${slug.join('/')}` : ''}`,
-        )}`,
-      )
-    }
-  } catch (e) {
-    // If the query fails, it means the user did not have access to query on the slug field
-    // Show the login view
-    redirect(
-      `/tenant-slugs/${params.tenant}/login?redirect=${encodeURIComponent(
-        `/tenant-slugs/${params.tenant}${slug ? `/${slug.join('/')}` : ''}`,
-      )}`,
-    )
-  }
-
-  const slugConstraint: Where = slug
-    ? {
         slug: {
           equals: slug.join('/'),
         },
-      }
-    : {
-        or: [
-          {
-            slug: {
-              equals: '',
-            },
-          },
-          {
-            slug: {
-              equals: 'home',
-            },
-          },
-          {
-            slug: {
-              exists: false,
-            },
-          },
-        ],
-      }
+      },
+    })
 
-  const pageQuery = await payload.find({
-    collection: 'pages',
-    overrideAccess: false,
-    user,
-    where: {
-      and: [
-        {
-          'tenant.slug': {
-            equals: params.tenant,
-          },
+    if (!page.docs[0]) {
+      return {
+        title: 'Page Not Found',
+      }
+    }
+
+    return {
+      title: page.docs[0].title,
+      description: page.docs[0].description,
+    }
+  } catch (error) {
+    return {
+      title: 'Error',
+    }
+  }
+}
+
+export default async function TenantPage({ params }: Props) {
+  const { tenant, slug } = params
+  const payload = await getPayloadClient()
+
+  try {
+    const page = await payload.find({
+      collection: 'pages',
+      where: {
+        tenant: {
+          equals: tenant,
         },
-        slugConstraint,
-      ],
-    },
-  })
+        slug: {
+          equals: slug.join('/'),
+        },
+      },
+    })
 
-  const pageData = pageQuery.docs?.[0]
+    if (!page.docs[0]) {
+      return notFound()
+    }
 
-  // The page with the provided slug could not be found
-  if (!pageData) {
+    const pageData = page.docs[0] as Page
+
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-6">{pageData.title}</h1>
+        {pageData.description && (
+          <p className="text-lg mb-8">{pageData.description}</p>
+        )}
+        
+        {/* Display Plek details */}
+        {pageData.baseRate && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold mb-2">Base Rate</h2>
+            <p className="text-xl">${pageData.baseRate} per night</p>
+          </div>
+        )}
+
+        {/* Display Package Types */}
+        {pageData.packageTypes && pageData.packageTypes.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold mb-4">Available Packages</h2>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {pageData.packageTypes.map((pkg, index) => (
+                <div key={index} className="border rounded-lg p-4 shadow-sm">
+                  <h3 className="text-xl font-semibold mb-2">{pkg.name}</h3>
+                  {pkg.description && (
+                    <p className="text-gray-600 mb-2">{pkg.description}</p>
+                  )}
+                  {pkg.price && (
+                    <p className="text-lg font-medium">${pkg.price}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  } catch (error) {
+    console.error('Error fetching page:', error)
     return notFound()
   }
-
-  // The page was found, render the page with data
-  return <RenderPage data={pageData} />
 }

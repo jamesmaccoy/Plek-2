@@ -40,6 +40,17 @@
       "@/*": [
         "./src/*"
       ],
+      "payload/next": [
+        "./node_modules/@payloadcms/next"
+      ],
+      "payload": [
+        "./node_modules/payload"
+      ],
+      "@payload-types": [
+        "./src/payload-types.ts"
+      ],
+      "@payloadcms/next": ["./node_modules/@payloadcms/next"],
+      "@payloadcms/next/handlers": ["./node_modules/@payloadcms/next/handlers"]
     }
   },
   "include": [

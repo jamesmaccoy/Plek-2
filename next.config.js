@@ -34,6 +34,18 @@ const nextConfig = {
   },
   reactStrictMode: true,
   redirects,
+  async rewrites() {
+    return [
+      {
+        source: '/api/payload/:path*',
+        destination: '/api/payload/:path*',
+      },
+      {
+        source: '/api/graphql',
+        destination: '/api/graphql',
+      }
+    ]
+  },
 }
 
 export default withPayload(nextConfig, { devBundleServerPackages: false })
