@@ -3,6 +3,7 @@ import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import path from 'path'
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import type { Access, FieldAccess } from 'payload'
+import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_SERVER_URL || '',
@@ -166,6 +167,7 @@ export default buildConfig({
         return Boolean(user?.roles?.includes('super-admin'))
       },
     }),
+    redirectsPlugin({}),
   ],
   typescript: {
     outputFile: path.resolve(__dirname, 'payload-types.ts'),

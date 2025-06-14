@@ -9,10 +9,13 @@ type Global = keyof Config['globals']
 async function getGlobal(slug: Global, depth = 0) {
   const payload = await getPayload({ config: configPromise })
 
-  const global = await payload.findGlobal({
-    slug,
-    depth,
-  })
+  let global: any | null = null
+  try {
+    global = await payload.findGlobal({
+      slug,
+      depth,
+    })
+  } catch { /* global stays null */ }
 
   return global
 }

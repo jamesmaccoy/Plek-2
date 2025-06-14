@@ -46,11 +46,20 @@
       "payload": [
         "./node_modules/payload"
       ],
+      "payload/graphql": [
+        "./node_modules/payload/dist/graphql"
+      ],
       "@payload-types": [
         "./src/payload-types.ts"
       ],
       "@payloadcms/next": ["./node_modules/@payloadcms/next"],
-      "@payloadcms/next/handlers": ["./node_modules/@payloadcms/next/handlers"]
+      "@payloadcms/next/handlers": ["./node_modules/@payloadcms/next/handlers"],
+      "@payloadcms/translations": [
+        "./node_modules/@payloadcms/translations"
+      ],
+      "@payloadcms/ui/dist/*": [
+        "./node_modules/@payloadcms/ui/dist/*"
+      ]
     }
   },
   "include": [
